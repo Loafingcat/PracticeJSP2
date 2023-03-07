@@ -28,17 +28,15 @@ public class BoardDAO {
 		}
 	}
 	//게시판 목록 조회 기능 수행
-	public ArrayList<BoardDTO> boardList(String curpage) {
+	public ArrayList<BoardDTO> boardList(String curPage) {
 		
 		ArrayList<BoardDTO> list = new ArrayList<BoardDTO>();
 		
 		try {
 			String sql = "SELECT * FROM BOARD ORDER BY ref desc, step asc LIMIT ?,? ";
 			
-			
-			
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, WRITING_PER_PAGE * (Integer.parseInt(curpage) - 1));
+			pstmt.setInt(1, WRITING_PER_PAGE * (Integer.parseInt(curPage) - 1));
 			pstmt.setInt(2, WRITING_PER_PAGE);
 			
 			rs = pstmt.executeQuery();
@@ -93,6 +91,10 @@ public class BoardDAO {
 		int pageCnt = 0;
 		
 		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 			String sql = "SELECT COUNT(*) AS num FROM BOARD";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
@@ -155,11 +157,15 @@ public class BoardDAO {
 		BoardDTO writing = new BoardDTO();
 		
 		try {
-			String sql = "UPDATE BOARD SET READ_CNT = READ_CNT +1 WHERE NUM = ?";
+			String sql = "UPDATE BOARD SET READ_CNT = READ_CNT+1 WHERE NUM = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			pstmt.executeUpdate();
+			
+			sql = "SELECT * FROM BOARD WHERE NUM = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
 			rs = pstmt.executeQuery();
-			
 			if (rs.next()) {
 				int num = rs.getInt("num");
 				String name = rs.getString("name");
