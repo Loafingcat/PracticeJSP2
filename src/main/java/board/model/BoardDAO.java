@@ -206,4 +206,108 @@ public class BoardDAO {
 		}
 		return writing;
 	}
+	//게시글 수정 기능 수행
+	public void boardUpdate (String inputNum, String inputSubject, String inputContent, String inputName, String inputPassword) {
+		
+		try {
+			String sql = "UPDATE BOARD SET subject=?, content=?, name=?, password=? WHERE num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, inputSubject);
+			pstmt.setString(2, inputContent);
+			pstmt.setString(3, inputName);
+			pstmt.setString(4, inputPassword);
+			pstmt.setInt(5, Integer.parseInt(inputNum));
+			
+			pstmt.executeUpdate();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	//게시글 수정 및 삭제를 위한 비밀번호 확인 기능 조회
+	public boolean boardPasswordCheck (String inputNum, String inputPassword) {
+		boolean passwordOk = false;
+		int passwordCheck = 0;
+		
+		try {
+			String sql = "SELECT COUNT(*) AS password_check FROM BOARD WHERE NUM=? and  password=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			pstmt.setString(2, inputPassword);
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) passwordCheck = rs.getInt("password_check");
+			if (passwordCheck > 0) passwordOk = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+			return passwordOk;
+	}
+	//글 수정 화면에 필요한 원글 데이터 조회 기능
+	public BoardDTO boardUpdateForm(String inputNum) {
+		
+		BoardDTO writing = new BoardDTO();
+		
+		try {
+			String sql = "SELECT * FROM BOARD WHERE NUM = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				int num = rs.getInt("num");
+				String name = rs.getString("name");
+				String password = rs.getString("password"); 
+				String subject = rs.getString("subject");
+				String content = rs.getString("content");
+				Date writeDate = rs.getDate("write_date");
+				Date writeTime = rs.getDate("write_time");
+				int ref = rs.getInt("ref");
+				int step = rs.getInt("step");
+				int lev = rs.getInt("lev");
+				int readCnt = rs.getInt("read_cnt");
+				int childCnt = rs.getInt("child_cnt");
+				
+				writing.setNum(num);
+				writing.setName(name);
+				writing.setPassword(password);
+				writing.setSubject(subject);
+				writing.setContent(content);
+				writing.setWriteDate(writeDate);
+				writing.setWriteTime(writeTime);
+				writing.setRef(ref);
+				writing.setStep(step);
+				writing.setLev(lev);
+				writing.setReadCnt(readCnt);
+				writing.setChildCnt(childCnt);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return writing;
+	}
 }

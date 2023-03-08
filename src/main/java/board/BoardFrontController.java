@@ -12,6 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import board.command.BoardCmd;
 import board.command.BoardListCmd;
 import board.command.BoardReadCmd;
+import board.command.BoardUpdateCheckCmd;
+import board.command.BoardUpdateCmd;
+import board.command.BoardUpdateFormCmd;
+import board.command.BoardUpdatePasswordCmd;
 import board.command.BoardWriteCmd;
 
 @WebServlet("*.bbs")
@@ -82,7 +86,7 @@ public class BoardFrontController extends HttpServlet {
 		if(cmdURI.equals("/boardUpdateForm.bbs")) {
 			cmd = new BoardUpdateFormCmd();
 			cmd.execute(request, response);
-			viewpage = "boardUpdateForm.jsp";
+			viewPage = "boardUpdateForm.jsp";
 		}
 		//글 수정 처리
 		if(cmdURI.equals("/boardUpdate.bbs")) {
