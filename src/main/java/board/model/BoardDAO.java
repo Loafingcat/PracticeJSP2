@@ -238,6 +238,10 @@ public class BoardDAO {
 		int passwordCheck = 0;
 		
 		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 			String sql = "SELECT COUNT(*) AS password_check FROM BOARD WHERE NUM=? and  password=?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
@@ -265,6 +269,10 @@ public class BoardDAO {
 		BoardDTO writing = new BoardDTO();
 		
 		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 			String sql = "SELECT * FROM BOARD WHERE NUM = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
@@ -309,5 +317,111 @@ public class BoardDAO {
 			}
 		}
 		return writing;
+	}
+	//글 삭제 기능 수행
+	public void boardDelete(String inputNum) {
+		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			String sql = "Selete ref, lev, step FROM BOARD WHERE num = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				int ref = rs.getInt(1);
+				int lev = rs.getInt(2);
+				int step = rs.getInt(3);
+				boardDeleteChildCntUpdate(ref, lev, step);
+			}
+			sql = "DELETE FROM BOARD WHERE num = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	//삭제 대상인 게시글에 답글의 존재 유무를 검사
+	public boolean boardReplyCheck(String inputNum) {
+		boolean replyCheck = false;
+		int replyCnt = 0;
+		
+		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			String sql = "SELETE child_cnt AS reply_check FROM BOARD WHERE num = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) replyCnt = rs.getInt("reply_check");
+			if (replyCnt == 0) replyCheck = true;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return replyCheck;
+	}
+	//게시글이 답글일 경우, 원글들의 답글 개수를 줄여주는 기능 수행
+	public void boardDeleteChildCntUpdate(int ref, int lev, int step) {
+		String sql = null;
+		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			for(int updateLev=lev-1; updateLev>=0; updateLev--) {
+				sql = "SELETE MAX(step) FROM BOARD WHERE ref = ? and lev = ? and step < ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, ref);
+				pstmt.setInt(2, updateLev);
+				pstmt.setInt(3, step);
+				
+				rs = pstmt.executeQuery();
+				int maxStep = 0;
+				
+				if(rs.next()) maxStep = rs.getInt(1);
+				sql = "UPDATE BOARD SET child_cnt = child_cnt - 1 where ref = ? and lev = ? and step = ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, ref);
+				pstmt.setInt(2, updateLev);
+				pstmt.setInt(3, maxStep);
+				pstmt.executeUpdate();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
