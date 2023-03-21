@@ -15,6 +15,7 @@ import board.command.BoardDeleteCmd;
 import board.command.BoardDeletePasswordCmd;
 import board.command.BoardListCmd;
 import board.command.BoardReadCmd;
+import board.command.BoardSearchCmd;
 import board.command.BoardUpdateCheckCmd;
 import board.command.BoardUpdateCmd;
 import board.command.BoardUpdateFormCmd;
@@ -122,6 +123,24 @@ public class BoardFrontController extends HttpServlet {
 		//글 삭제 처리
 		if(cmdURI.equals("/boardDelete.bbs")) {
 			cmd = new BoardDeleteCmd();
+			cmd.execute(request, response);
+			viewPage = "boardList.bbs";
+		}
+		//글 검색 처리
+		if(cmdURI.equals("/boardSearch.bbs")) {
+			cmd = new BoardSearchCmd();
+			cmd.execute(request, response);
+			viewPage = "boardSearchList.jsp";
+		}
+		//답글 작성 화면 제공
+		if(cmdURI.equals("/boardReplyForm.bbs")) {
+			cmd = new BoardReplyFormCmd();
+			cmd.execute(request, response);
+			viewPage = "boardReeply.jsp";
+		}
+		//답글 작성 처리
+		if(cmdURI.equals("/boardReply.bbs")) {
+			cmd = new BoardReplyCmd();
 			cmd.execute(request, response);
 			viewPage = "boardList.bbs";
 		}

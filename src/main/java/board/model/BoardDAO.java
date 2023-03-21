@@ -321,11 +321,7 @@ public class BoardDAO {
 	//글 삭제 기능 수행
 	public void boardDelete(String inputNum) {
 		try {
-			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
-			String dbID = "root";
-			String dbPassword = "junho";
-			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
-			String sql = "Selete ref, lev, step FROM BOARD WHERE num = ?";
+			String sql = "SELECT ref, lev, step FROM BOARD WHERE num = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
 			rs = pstmt.executeQuery();
@@ -336,6 +332,10 @@ public class BoardDAO {
 				int step = rs.getInt(3);
 				boardDeleteChildCntUpdate(ref, lev, step);
 			}
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 			sql = "DELETE FROM BOARD WHERE num = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
@@ -364,7 +364,7 @@ public class BoardDAO {
 			String dbID = "root";
 			String dbPassword = "junho";
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
-			String sql = "SELETE child_cnt AS reply_check FROM BOARD WHERE num = ?";
+			String sql = "SELECT child_cnt AS reply_check FROM BOARD WHERE num = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
 			
@@ -422,6 +422,182 @@ public class BoardDAO {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	//검색 기능 수행
+	public ArrayList<BoardDTO> boardSearch(String searchOption, String searchWord) {
+		ArrayList<BoardDTO> list = new ArrayList<BoardDTO>();
+		
+		try {
+			String sql = null;
+			
+			
+			if(searchOption.equals("subject")) {
+				sql = "SELECT * FROM BOARD WHERE subject LIKE ? ORDER BY ref desc, step asc"; 
+				
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, "%" + searchWord + "%");
+				
+			} else if(searchOption.equals("content")) {
+				sql = "SELECT * FROM BOARD WHERE content LIKE ? ORDER BY ref desc, step asc";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, "%" + searchWord + "%");
+				
+			} else if(searchOption.equals("name")) {
+				sql = "SELECT * FROM BOARD WHERE name LIKE ? ORDER BY ref desc, step asc";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, "%" + searchWord + "%");
+				
+			} else if(searchOption.equals("both")) {
+				sql = "SELECT * FROM BOARD WHERE subject LIKE ? OR content LIKE ? ORDER BY ref desc, step asc";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, "%" + searchWord + "%");
+				pstmt.setString(2, "%" + searchWord + "%");
+			}
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				
+				int num = rs.getInt("num");
+				String name = rs.getString("name");
+				String password = rs.getString("password"); 
+				String subject = rs.getString("subject");
+				String content = rs.getString("content");
+				Date writeDate = rs.getDate("write_date");
+				Date writeTime = rs.getDate("write_time");
+				int ref = rs.getInt("ref");
+				int step = rs.getInt("step");
+				int lev = rs.getInt("lev");
+				int readCnt = rs.getInt("read_cnt");
+				int childCnt = rs.getInt("child_cnt");
+				
+				BoardDTO writing = new BoardDTO();
+				writing.setNum(num);
+				writing.setName(name);
+				writing.setPassword(password);
+				writing.setSubject(subject);
+				writing.setContent(content);
+				writing.setWriteDate(writeDate);
+				writing.setWriteTime(writeTime);
+				writing.setRef(ref);
+				writing.setStep(step);
+				writing.setLev(lev);
+				writing.setReadCnt(readCnt);
+				writing.setChildCnt(childCnt);
+				
+				list.add(writing);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return list;
+	}
+	//답글 작성에 필요한 원글 데이터 조회 기능
+	public BoardDTO boardReplyForm(String inputNum) {
+		BoardDTO writing = new BoardDTO();
+		
+		try {
+			String sql = "SELECT * FROM BOARD WHERE NUM = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				int num = rs.getInt("num");
+				String name = rs.getString("name");
+				String password = rs.getString("password"); 
+				String subject ="RE:" + rs.getString("subject");
+				Date writeDate = rs.getDate("write_date");
+				Date writeTime = rs.getDate("write_time");
+				String content = "[원문:" + writeDate+" "+writeTime +"작성됨]\n" + rs.getString("content");
+				int ref = rs.getInt("ref");
+				int step = rs.getInt("step");
+				int lev = rs.getInt("lev");
+				int readCnt = rs.getInt("read_cnt");
+				int childCnt = rs.getInt("child_cnt");
+				
+			
+				writing.setNum(num);
+				writing.setName(name);
+				writing.setPassword(password);
+				writing.setSubject(subject);
+				
+				writing.setContent(content);
+				writing.setWriteDate(writeDate);
+				writing.setWriteTime(writeTime);
+				writing.setRef(ref);
+				writing.setStep(step);
+				writing.setLev(lev);
+				writing.setReadCnt(readCnt);
+				writing.setChildCnt(childCnt);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return writing;
+	}
+	//답글 등록 기능 수행
+	public void boardReply(String num, String name, String subject, String content, String password, String ref, String step, String lev) {
+		
+		int replyNum = 0;
+		int replyStep = 0;
+		String sql = null;
+		
+		try {
+			replyStep = boardReplySearchStep(ref, lev, step);
+			//답글이 위치할 step 값을 가져옴
+			
+			if(replyStep > 0) {
+				sql = "UPDATE BOARD SET step = step + 1 where ref = ? and step >= ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, Integer.parseInt(ref));
+				pstmt.setInt(2, replyStep);
+				pstmt.executeUpdate();
+			} else {
+				sql = "SELECT MAX (STEP) FROM BOARD WHERE ref = ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, Integer.parseInt(sql));
+				rs = pstmt.executeQuery();
+				if(rs.next()) replyStep = rs.getInt(1) + 1;
+			}
+			
+			sql = "SELECT MAX(num)+1 AS NUM FROM BOARD";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			if(rs.next()) replyNum = rs.getInt("num");
+			sql = "INSERT INTO BOARD";
+			sql += "(num, name, password, subject, content, write_date, write_time, ref, step, lev, read_cnt, child_cnt)";
+			sql += "valuse(?,?,?,?,?,curdate(),curtime(),?,?,?,0,0";
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, replyNum);
+			pstmt.setString(2, name);
+			pstmt.setString(3, password);
+			pstmt.setString(4, subject);
+			pstmt.setString(5, content);
+			pstmt.setInt(6, Integer.parseInt(ref));
+			pstmt.setInt(7, replyStep);
+			pstmt.setInt(8, Integer.parseInt(lev)+1);
+			pstmt.executeUpdate();
+			
+			
+			
 		}
 	}
 }
