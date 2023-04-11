@@ -4,6 +4,7 @@
 
 <%@ page import = "board.model.*" %>
 <%@ page import = "java.util.*" %>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -38,5 +39,32 @@
 			</td>
 		</tr>
 	</table>
+<!-- 댓글 부분 -->
+<hr />
+<ul>
+	<c:forEach items="${getComment}" var="getComment">
+	<li>
+		<div>
+			<p>${getComment.writer} / ${getComment.regDate} <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a></p>
+			<p>${getComment.content}</p>
+		</div>
+	</li>
+	</c:forEach>
+</ul>
+
+<div>
+	<form action="writeComment.bbs"method="post">
+		<p>
+			<label>댓글 작성자</label><input type="text" name="writer">
+		</p>
+		<p>
+			<textarea rows="5" cols="50" name="content"></textarea>
+		</p>
+		<p>
+			<input type="hidden" name="num" value="${boardRead.num}">
+			<input type="submit" value="댓글 달기">
+		</p>
+	</form>	
+</div>
 </body>
 </html>

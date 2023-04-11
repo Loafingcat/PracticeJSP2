@@ -33,7 +33,7 @@ public class BoardDAO {
 		ArrayList<BoardDTO> list = new ArrayList<BoardDTO>();
 		
 		try {
-			String sql = "SELECT * FROM BOARD ORDER BY ref desc, step asc LIMIT ?,? ";
+			String sql = "SELECT * FROM BOARD where ISDELETED = '0' ORDER BY ref desc, step asc LIMIT ?,? ";
 			
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, WRITING_PER_PAGE * (Integer.parseInt(curPage) - 1));
@@ -157,6 +157,10 @@ public class BoardDAO {
 		BoardDTO writing = new BoardDTO();
 		
 		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 			String sql = "UPDATE BOARD SET READ_CNT = READ_CNT+1 WHERE NUM = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
@@ -336,7 +340,7 @@ public class BoardDAO {
 			String dbID = "root";
 			String dbPassword = "junho";
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
-			sql = "DELETE FROM BOARD WHERE num = ?";
+			sql = "UPDATE BOARD set ISDELETED = 1 WHERE num = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
 			
@@ -429,6 +433,10 @@ public class BoardDAO {
 		ArrayList<BoardDTO> list = new ArrayList<BoardDTO>();
 		
 		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 			String sql = null;
 			
 			
@@ -505,6 +513,10 @@ public class BoardDAO {
 		BoardDTO writing = new BoardDTO();
 		
 		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 			String sql = "SELECT * FROM BOARD WHERE NUM = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
@@ -555,11 +567,18 @@ public class BoardDAO {
 	//답글 등록 기능 수행
 	public void boardReply(String num, String name, String subject, String content, String password, String ref, String step, String lev) {
 		
+		Connection conn = null;
+
 		int replyNum = 0;
 		int replyStep = 0;
 		String sql = null;
 		
 		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			
 			replyStep = boardReplySearchStep(ref, lev, step);
 			//답글이 위치할 step 값을 가져옴
 			
@@ -570,9 +589,9 @@ public class BoardDAO {
 				pstmt.setInt(2, replyStep);
 				pstmt.executeUpdate();
 			} else {
-				sql = "SELECT MAX (STEP) FROM BOARD WHERE ref = ?";
+				sql = "SELECT MAX(STEP) FROM BOARD WHERE ref = ?";
 				pstmt = conn.prepareStatement(sql);
-				pstmt.setInt(1, Integer.parseInt(sql));
+				pstmt.setInt(1, Integer.parseInt(ref));
 				rs = pstmt.executeQuery();
 				if(rs.next()) replyStep = rs.getInt(1) + 1;
 			}
@@ -583,7 +602,7 @@ public class BoardDAO {
 			if(rs.next()) replyNum = rs.getInt("num");
 			sql = "INSERT INTO BOARD";
 			sql += "(num, name, password, subject, content, write_date, write_time, ref, step, lev, read_cnt, child_cnt)";
-			sql += "valuse(?,?,?,?,?,curdate(),curtime(),?,?,?,0,0";
+			sql += "values(?,?,?,?,?,curdate(),curtime(),?,?,?,0,0)";
 			
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, replyNum);
@@ -595,9 +614,181 @@ public class BoardDAO {
 			pstmt.setInt(7, replyStep);
 			pstmt.setInt(8, Integer.parseInt(lev)+1);
 			pstmt.executeUpdate();
+			boardReplyChildCntUpdate(ref,lev,replyStep);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	//답글의 출력 위치(step) 선정 기능 수행
+	public int boardReplySearchStep(String ref, String lev, String step) {
+		int replyStep=0;
+		
+		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			String sql = "SELECT IFNULL(MIN(step), 0) from BOARD WHERE ref = ? and lev <= ? and step > ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(ref));
+			pstmt.setInt(2, Integer.parseInt(lev));
+			pstmt.setInt(3, Integer.parseInt(step));
+			rs = pstmt.executeQuery();
 			
+			if(rs.next()) replyStep = rs.getInt(1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return replyStep;
+	}
+	//답글 작성 후 원글들의 답글 개수를 늘려주는 기능 수행
+	public void boardReplyChildCntUpdate(String ref, String lev, int replyStep) {
+			String sql = null;
 			
+			try {
+				String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+				String dbID = "root";
+				String dbPassword = "junho";
+				conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+				for (int updateLev = Integer.parseInt(lev); updateLev>=0; updateLev--) {
+					sql = "SELECT MAX(step) FROM BOARD WHERE ref = ? and lev = ? and step < ?";
+					pstmt = conn.prepareStatement(sql);
+					pstmt.setInt(1, Integer.parseInt(ref));
+					pstmt.setInt(2, updateLev);
+					pstmt.setInt(3, replyStep);
+					
+					rs = pstmt.executeQuery();
+					int maxStep = 0;
+					
+					if (rs.next()) maxStep = rs.getInt(1);
+					sql = "UPDATE BOARD SET child_cnt = child_cnt + 1 where ref = ? and lev = ? and step = ?";
+					pstmt = conn.prepareStatement(sql);
+					pstmt.setInt(1, Integer.parseInt(ref));
+					pstmt.setInt(2, updateLev);
+					pstmt.setInt(3, maxStep);
+					pstmt.executeUpdate();
+				}
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				try {
+					if(rs != null) rs.close();
+					if(pstmt != null) pstmt.close();
+					if(conn != null) conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+	}
+	//댓글목록 조회 기능
+	public ArrayList<Comment> getComment(String inputNum) {
+		ArrayList<Comment> comment = new ArrayList<Comment>();
+		
+		try {
+			String sql = "select * from board_comment where num = ? AND ISDELETED = '0'";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			rs = pstmt.executeQuery();
+			while(rs.next()) {
+				int rno = rs.getInt("rno");
+				int num = rs.getInt("num");
+				String writer = rs.getString("writer");
+				String content = rs.getString("content");
+				Date regDate = rs.getDate("regdate");
+				
+				Comment cmt = new Comment();
+				cmt.setRno(rno);
+				cmt.setNum(num);
+				cmt.setWriter(writer);
+				cmt.setContent(content);
+				cmt.setRegDate(regDate);
+				
+				comment.add(cmt);
+			}
 			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return comment;
+	}
+	//댓글 등록 기능
+	public void writeComment(String writer, String content) {
+		
+		int num = 1;
+		int rno = 1;
+		
+		try {
+			String sql = "SELECT IFNULL(MAX(rno), 0)+1 AS rno FROM board_comment";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				rno = rs.getInt(rno);
+			}
+			sql = "INSERT INTO board_comment (rno, num, writer, content, regDate) values(?,?,?,?,SYSDATE())";
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, rno);
+			pstmt.setInt(2, num);
+			pstmt.setString(3, writer);
+			pstmt.setString(4, content);
+			
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	public void commentDelete(String inputNum) {
+		try {
+			String sql = "UPDATE board_comment set ISDELETED = 1 WHERE rno = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(inputNum));
+			
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

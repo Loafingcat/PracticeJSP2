@@ -1,6 +1,6 @@
 package board;
 
-import java.io.IOException; 
+import java.io.IOException;  
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -10,11 +10,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import board.command.BoardCmd;
+import board.command.BoardCommentDeleteCmd;
+import board.command.BoardCommentWriteCmd;
 import board.command.BoardDeleteCheckCmd;
 import board.command.BoardDeleteCmd;
 import board.command.BoardDeletePasswordCmd;
 import board.command.BoardListCmd;
 import board.command.BoardReadCmd;
+import board.command.BoardReplyCmd;
+import board.command.BoardReplyFormCmd;
 import board.command.BoardSearchCmd;
 import board.command.BoardUpdateCheckCmd;
 import board.command.BoardUpdateCmd;
@@ -136,16 +140,25 @@ public class BoardFrontController extends HttpServlet {
 		if(cmdURI.equals("/boardReplyForm.bbs")) {
 			cmd = new BoardReplyFormCmd();
 			cmd.execute(request, response);
-			viewPage = "boardReeply.jsp";
+			viewPage = "boardReply.jsp";
 		}
 		//답글 작성 처리
 		if(cmdURI.equals("/boardReply.bbs")) {
 			cmd = new BoardReplyCmd();
 			cmd.execute(request, response);
 			viewPage = "boardList.bbs";
+		}  
+		if(cmdURI.equals("/writeComment.bbs")) {
+			cmd = new BoardCommentWriteCmd();
+			cmd.execute(request, response);
+			viewPage = "boardRead.bbs";
+		}
+		if(cmdURI.equals("/commentDelete.bbs")) {
+			cmd = new BoardCommentDeleteCmd();
+			cmd.execute(request, response);
+			viewPage = "boardList.bbs";
 		}
 		RequestDispatcher dis = request.getRequestDispatcher(viewPage);
 		dis.forward(request, response);
 	}
-	
 }
