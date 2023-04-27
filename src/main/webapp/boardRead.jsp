@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <%@ page import = "board.model.*" %>
 <%@ page import = "java.util.*" %>
@@ -45,7 +46,7 @@
 	<c:forEach items="${getComment}" var="getComment">
 	<li>
 		<div>
-			<p>${getComment.writer} / ${getComment.regDate} <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a></p>
+			<p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss" /> <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a></p>
 			<p>${getComment.content}</p>
 		</div>
 	</li>
