@@ -21,7 +21,7 @@
 			<td>글 제목</td>
 			<td>작성자</td>
 			<td>작성일</td>
-			<td>작성시간</td>
+			<td>작성시각</td>
 			<td>조회수</td>
 			<td>답글수</td>
 		</tr>
@@ -37,7 +37,7 @@
 					<a href="boardRead.bbs?num=${dto.num}">${dto.subject}</a></td>
 					<td>${dto.name }</td>
 					<td>${dto.writeDate }</td>
-					<td>${dto.writeTime }</td>
+					<td>${dto.regDate }</td>
 					<td>${dto.readCnt }</td>
 					<td>${dto.childCnt }</td>
 				</tr>

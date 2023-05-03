@@ -40,7 +40,7 @@ public class BoardDAO {
 			pstmt.setInt(2, WRITING_PER_PAGE);
 			
 			rs = pstmt.executeQuery();
-			
+			sql = "SELECT TO_CHAR(regdate, 'HH:mm:ss') FROM board";
 			while(rs.next()) {
 				
 				int num = rs.getInt("num");
@@ -50,6 +50,7 @@ public class BoardDAO {
 				String content = rs.getString("content");
 				Date writeDate = rs.getDate("write_date");
 				Date writeTime = rs.getDate("write_time");
+				String regDate = rs.getString("regdate");
 				int ref = rs.getInt("ref");
 				int step = rs.getInt("step");
 				int lev = rs.getInt("lev");
@@ -64,11 +65,14 @@ public class BoardDAO {
 				writing.setContent(content);
 				writing.setWriteDate(writeDate);
 				writing.setWriteTime(writeTime);
+				writing.setRegDate(regDate);
 				writing.setRef(ref);
 				writing.setStep(step);
 				writing.setLev(lev);
 				writing.setReadCnt(readCnt);
 				writing.setChildCnt(childCnt);
+				
+				
 				
 				list.add(writing);
 			}
@@ -705,6 +709,7 @@ public class BoardDAO {
 			String sql = "select * from board_comment where num = ? AND ISDELETED = '0'";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
+			System.out.println(inputNum);
 			rs = pstmt.executeQuery();
 			while(rs.next()) {
 				int rno = rs.getInt("rno");

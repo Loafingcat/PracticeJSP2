@@ -15,7 +15,14 @@ public class BoardDTO {
 	private int lev;
 	private int readCnt;
 	private int childCnt;
+	private String regDate;
 	
+	public String getRegDate() {
+		return regDate;
+	}
+	public void setRegDate(String regDate) {
+		this.regDate = regDate;
+	}
 	public int getNum() {
 		return num;
 	}
