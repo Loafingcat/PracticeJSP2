@@ -1,6 +1,8 @@
 package board.model;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class BoardDTO {
 	private int num;
@@ -15,13 +17,16 @@ public class BoardDTO {
 	private int lev;
 	private int readCnt;
 	private int childCnt;
-	private String regDate;
+	private LocalDateTime regDate;
 	
-	public String getRegDate() {
+	public LocalDateTime getRegDate() {
 		return regDate;
 	}
-	public void setRegDate(String regDate) {
+	public void setRegDate(LocalDateTime regDate) {
 		this.regDate = regDate;
+	}
+	public String getRegDateTime() {
+		return this.regDate.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 	}
 	public int getNum() {
 		return num;

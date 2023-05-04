@@ -37,7 +37,7 @@
 					<a href="boardRead.bbs?num=${dto.num}">${dto.subject}</a></td>
 					<td>${dto.name }</td>
 					<td>${dto.writeDate }</td>
-					<td>${dto.regDate }</td>
+					<td>${dto.getRegDateTime() }</td>
 					<td>${dto.readCnt }</td>
 					<td>${dto.childCnt }</td>
 				</tr>

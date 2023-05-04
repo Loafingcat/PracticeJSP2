@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class BoardDAO {
@@ -40,7 +41,7 @@ public class BoardDAO {
 			pstmt.setInt(2, WRITING_PER_PAGE);
 			
 			rs = pstmt.executeQuery();
-			sql = "SELECT TO_CHAR(regdate, 'HH:mm:ss') FROM board";
+			
 			while(rs.next()) {
 				
 				int num = rs.getInt("num");
@@ -50,7 +51,7 @@ public class BoardDAO {
 				String content = rs.getString("content");
 				Date writeDate = rs.getDate("write_date");
 				Date writeTime = rs.getDate("write_time");
-				String regDate = rs.getString("regdate");
+				LocalDateTime regDate = rs.getTimestamp("regdate").toLocalDateTime();
 				int ref = rs.getInt("ref");
 				int step = rs.getInt("step");
 				int lev = rs.getInt("lev");

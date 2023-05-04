@@ -6,10 +6,18 @@
 <head>
 <meta charset="UTF-8">
 <title>게시판 새글 쓰기</title>
+	<script type="text/javascript">
+			function checkForm() {
+				if (document.write.password.value.length < 4 || document.write.password.value.length > 8) {
+					alert("비밀번호를 4~8자 이내로 입력해주세요.");
+					return false;
+				}
+			}
+	</script>
 </head>
 <body>
 	<h3>게시판 새글 쓰기</h3>
-	<form action="boardWrite.bbs"method="post">
+	<form name="write" action="boardWrite.bbs"method="post">
 		<table>
 			<tr>
 				<td colspan="4" align="right"><a href="boardList.bbs">
@@ -33,7 +41,7 @@
 			</tr>
 			<tr>
 				<td colspan="4" align="right">
-					<input type="submit" value="글 올리기">
+					<input type="submit" value="글 올리기" onclick="return checkForm()">
 				</td>
 			</tr>
 			
