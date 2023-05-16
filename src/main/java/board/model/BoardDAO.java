@@ -339,7 +339,7 @@ public class BoardDAO {
 				int ref = rs.getInt(1);
 				int lev = rs.getInt(2);
 				int step = rs.getInt(3);
-				boardDeleteChildCntUpdate(ref, lev, step);
+				boardDeleteChildCntUpdate(ref, lev, step);//답글을 삭제할 때 답글수를 줄여주는 기능이 작동한다
 			}
 			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
 			String dbID = "root";
@@ -373,14 +373,14 @@ public class BoardDAO {
 			String dbID = "root";
 			String dbPassword = "junho";
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
-			String sql = "SELECT child_cnt AS reply_check FROM BOARD WHERE num = ?";
+			String sql = "SELECT child_cnt AS reply_check FROM BOARD WHERE num = ?";//답글이 있는지 없는지 체크하는 부분
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
 			
 			rs = pstmt.executeQuery();
 			
 			if (rs.next()) replyCnt = rs.getInt("reply_check");
-			if (replyCnt == 0) replyCheck = true;
+			if (replyCnt == 0) replyCheck = true;//답글이 0개라면 true로 삭제가 가능한 글이다
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -395,7 +395,7 @@ public class BoardDAO {
 		}
 		return replyCheck;
 	}
-	//게시글이 답글일 경우, 원글들의 답글 개수를 줄여주는 기능 수행
+	//삭제하는 게시글이 답글일 경우, 원글들의 답글 개수를 줄여주는 기능 수행
 	public void boardDeleteChildCntUpdate(int ref, int lev, int step) {
 		String sql = null;
 		try {
@@ -403,8 +403,8 @@ public class BoardDAO {
 			String dbID = "root";
 			String dbPassword = "junho";
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
-			for(int updateLev=lev-1; updateLev>=0; updateLev--) {
-				sql = "SELETE MAX(step) FROM BOARD WHERE ref = ? and lev = ? and step < ?";
+			for(int updateLev=lev-1; updateLev>=0; updateLev--) {//답글을 삭제할 경우 lev를 줄여주는 부분
+				sql = "SELECT MAX(step) FROM BOARD WHERE ref = ? and lev = ? and step < ?";//가장 큰 step값을 골라서 삭제한다.
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setInt(1, ref);
 				pstmt.setInt(2, updateLev);
@@ -414,7 +414,8 @@ public class BoardDAO {
 				int maxStep = 0;
 				
 				if(rs.next()) maxStep = rs.getInt(1);
-				sql = "UPDATE BOARD SET child_cnt = child_cnt - 1 where ref = ? and lev = ? and step = ?";
+				
+				sql = "UPDATE BOARD SET child_cnt = child_cnt - 1 where ref = ? and lev = ? and step = ?";//답글 개수를 줄이는 부분
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setInt(1, ref);
 				pstmt.setInt(2, updateLev);
@@ -534,7 +535,7 @@ public class BoardDAO {
 				String subject ="RE:" + rs.getString("subject");
 				Date writeDate = rs.getDate("write_date");
 				Date writeTime = rs.getDate("write_time");
-				String content = "[원문:" + writeDate+" "+writeTime +"작성됨]\n" + rs.getString("content");
+				String content = "[원문:" + writeDate+" "+writeTime +"작성됨]\n" + rs.getString("content");//답글에 원문을 들고온다
 				int ref = rs.getInt("ref");
 				int step = rs.getInt("step");
 				int lev = rs.getInt("lev");
@@ -587,8 +588,8 @@ public class BoardDAO {
 			replyStep = boardReplySearchStep(ref, lev, step);
 			//답글이 위치할 step 값을 가져옴
 			
-			if(replyStep > 0) {
-				sql = "UPDATE BOARD SET step = step + 1 where ref = ? and step >= ?";
+			if(replyStep > 0) {//만약 replyStep값이 0보다 크다면
+				sql = "UPDATE BOARD SET step = step + 1 where ref = ? and step >= ?";//step값을 +1 해준다
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setInt(1, Integer.parseInt(ref));
 				pstmt.setInt(2, replyStep);
@@ -682,7 +683,7 @@ public class BoardDAO {
 					int maxStep = 0;
 					
 					if (rs.next()) maxStep = rs.getInt(1);
-					sql = "UPDATE BOARD SET child_cnt = child_cnt + 1 where ref = ? and lev = ? and step = ?";
+					sql = "UPDATE BOARD SET child_cnt = child_cnt + 1 where ref = ? and lev = ? and step = ?";//답글을 늘려줘요~
 					pstmt = conn.prepareStatement(sql);
 					pstmt.setInt(1, Integer.parseInt(ref));
 					pstmt.setInt(2, updateLev);
