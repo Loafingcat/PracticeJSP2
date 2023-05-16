@@ -595,14 +595,14 @@ public class BoardDAO {
 				pstmt.setInt(2, replyStep);
 				pstmt.executeUpdate();
 			} else {
-				sql = "SELECT MAX(STEP) FROM BOARD WHERE ref = ?";
+				sql = "SELECT MAX(STEP) FROM BOARD WHERE ref = ?";//maxstep을 가져와서 replystep을 하나씩 +1 해준다? 
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setInt(1, Integer.parseInt(ref));
 				rs = pstmt.executeQuery();
 				if(rs.next()) replyStep = rs.getInt(1) + 1;
 			}
 			
-			sql = "SELECT MAX(num)+1 AS NUM FROM BOARD";
+			sql = "SELECT MAX(num)+1 AS NUM FROM BOARD";//게시물 번호도 +1 해준다
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			if(rs.next()) replyNum = rs.getInt("num");
@@ -642,7 +642,7 @@ public class BoardDAO {
 			String dbID = "root";
 			String dbPassword = "junho";
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
-			String sql = "SELECT IFNULL(MIN(step), 0) from BOARD WHERE ref = ? and lev <= ? and step > ?";
+			String sql = "SELECT IFNULL(MIN(step), 0) from BOARD WHERE ref = ? and lev <= ? and step > ?";//가장 작은 step을 확인하고 step의 수를 늘려준다.
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(ref));
 			pstmt.setInt(2, Integer.parseInt(lev));
@@ -673,7 +673,7 @@ public class BoardDAO {
 				String dbPassword = "junho";
 				conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 				for (int updateLev = Integer.parseInt(lev); updateLev>=0; updateLev--) {
-					sql = "SELECT MAX(step) FROM BOARD WHERE ref = ? and lev = ? and step < ?";
+					sql = "SELECT MAX(step) FROM BOARD WHERE ref = ? and lev = ? and step < ?";//최대 step을 확인하고
 					pstmt = conn.prepareStatement(sql);
 					pstmt.setInt(1, Integer.parseInt(ref));
 					pstmt.setInt(2, updateLev);
@@ -682,7 +682,7 @@ public class BoardDAO {
 					rs = pstmt.executeQuery();
 					int maxStep = 0;
 					
-					if (rs.next()) maxStep = rs.getInt(1);
+					if (rs.next()) maxStep = rs.getInt(1);//데이터가 존재한다면
 					sql = "UPDATE BOARD SET child_cnt = child_cnt + 1 where ref = ? and lev = ? and step = ?";//답글을 늘려줘요~
 					pstmt = conn.prepareStatement(sql);
 					pstmt.setInt(1, Integer.parseInt(ref));
