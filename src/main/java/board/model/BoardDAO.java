@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class BoardDAO {
@@ -532,10 +533,11 @@ public class BoardDAO {
 				int num = rs.getInt("num");
 				String name = rs.getString("name");
 				String password = rs.getString("password"); 
-				String subject ="RE:" + rs.getString("subject");
+				String subject ="RE:" + rs.getString("subject");//제목에 RE:가 달리게 된다.
 				Date writeDate = rs.getDate("write_date");
 				Date writeTime = rs.getDate("write_time");
-				String content = "[원문:" + writeDate+" "+writeTime +"작성됨]\n" + rs.getString("content");//답글에 원문을 들고온다
+				LocalDateTime regDate = rs.getTimestamp("regdate").toLocalDateTime();
+				String content = "[원문:" + writeDate+" "+ regDate.format(DateTimeFormatter.ofPattern("HH:MM:ss")) +"작성됨]\n" + rs.getString("content");//답글에 원문을 들고온다
 				int ref = rs.getInt("ref");
 				int step = rs.getInt("step");
 				int lev = rs.getInt("lev");
@@ -585,8 +587,8 @@ public class BoardDAO {
 			String dbPassword = "junho";
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
 			
-			replyStep = boardReplySearchStep(ref, lev, step);
 			//답글이 위치할 step 값을 가져옴
+			replyStep = boardReplySearchStep(ref, lev, step);
 			
 			if(replyStep > 0) {//만약 replyStep값이 0보다 크다면
 				sql = "UPDATE BOARD SET step = step + 1 where ref = ? and step >= ?";//step값을 +1 해준다
@@ -594,15 +596,15 @@ public class BoardDAO {
 				pstmt.setInt(1, Integer.parseInt(ref));
 				pstmt.setInt(2, replyStep);
 				pstmt.executeUpdate();
-			} else {
-				sql = "SELECT MAX(STEP) FROM BOARD WHERE ref = ?";//maxstep을 가져와서 replystep을 하나씩 +1 해준다? 
+			} else {//replyStep이 0인 경우
+				sql = "SELECT MAX(STEP) FROM BOARD WHERE ref = ?";//maxstep을 가져와서
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setInt(1, Integer.parseInt(ref));
 				rs = pstmt.executeQuery();
-				if(rs.next()) replyStep = rs.getInt(1) + 1;
+				if(rs.next()) replyStep = rs.getInt(1) + 1;//maxstep값에 +1 해준다
 			}
 			
-			sql = "SELECT MAX(num)+1 AS NUM FROM BOARD";//게시물 번호도 +1 해준다
+			sql = "SELECT MAX(num)+1 AS NUM FROM BOARD";//게시물 번호도 최대 num에서 +1 해준다
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			if(rs.next()) replyNum = rs.getInt("num");
@@ -618,9 +620,9 @@ public class BoardDAO {
 			pstmt.setString(5, content);
 			pstmt.setInt(6, Integer.parseInt(ref));
 			pstmt.setInt(7, replyStep);
-			pstmt.setInt(8, Integer.parseInt(lev)+1);
+			pstmt.setInt(8, Integer.parseInt(lev)+1);//답글이니까 답글의 깊이인 lev +1 해준다
 			pstmt.executeUpdate();
-			boardReplyChildCntUpdate(ref,lev,replyStep);
+			boardReplyChildCntUpdate(ref,lev,replyStep);//답글 갯수를 늘려주는건 여기서 한다
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -642,14 +644,14 @@ public class BoardDAO {
 			String dbID = "root";
 			String dbPassword = "junho";
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
-			String sql = "SELECT IFNULL(MIN(step), 0) from BOARD WHERE ref = ? and lev <= ? and step > ?";//가장 작은 step을 확인하고 step의 수를 늘려준다.
+			String sql = "SELECT IFNULL(MIN(step), 0) from BOARD WHERE ref = ? and lev <= ? and step > ?";//만약 step값이 null이면 0이 선택되고, 아니면 최소 step값이 선택된다.
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(ref));
 			pstmt.setInt(2, Integer.parseInt(lev));
 			pstmt.setInt(3, Integer.parseInt(step));
 			rs = pstmt.executeQuery();
 			
-			if(rs.next()) replyStep = rs.getInt(1);
+			if(rs.next()) replyStep = rs.getInt(1);//minStep이나 0값을 받아와서 replyStep으로 리턴
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -682,7 +684,7 @@ public class BoardDAO {
 					rs = pstmt.executeQuery();
 					int maxStep = 0;
 					
-					if (rs.next()) maxStep = rs.getInt(1);//데이터가 존재한다면
+					if (rs.next()) maxStep = rs.getInt(1);//maxStep이 존재한다면
 					sql = "UPDATE BOARD SET child_cnt = child_cnt + 1 where ref = ? and lev = ? and step = ?";//답글을 늘려줘요~
 					pstmt = conn.prepareStatement(sql);
 					pstmt.setInt(1, Integer.parseInt(ref));
@@ -779,6 +781,7 @@ public class BoardDAO {
 			}
 		}
 	}
+	//댓글 삭제 기능
 	public void commentDelete(String inputNum) {
 		try {
 			String sql = "UPDATE board_comment set ISDELETED = 1 WHERE rno = ?";
