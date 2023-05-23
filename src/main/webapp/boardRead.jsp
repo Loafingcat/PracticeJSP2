@@ -46,7 +46,7 @@
 	<c:forEach items="${getComment}" var="getComment">
 	<li>
 		<div>
-			<p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss" /> <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a></p>
+			<p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss" /> <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a><input type="submit" value="대댓글 달기"></p>
 			<p>${getComment.content}</p>
 		</div>
 	</li>
@@ -63,7 +63,7 @@
 		</p>
 		<p>
 			<input type="hidden" name="num" value="${boardRead.num}">
-			<input type="submit" value="댓글 달기">
+			<input type="submit" value="대댓글 달기">
 		</p>
 	</form>	
 </div>
