@@ -12,6 +12,10 @@
 <meta charset="UTF-8">
 <title>게시판 글 열람</title>
 </head>
+<script type="text/javascript">
+
+
+</script>
 <body>
 	<h3>게시판 글 열람</h3>
 	<table>
@@ -45,8 +49,10 @@
 <ul>
 	<c:forEach items="${getComment}" var="getComment">
 	<li>
-		<div>
-			<p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss" /> <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a><input type="submit" value="대댓글 달기"></p>
+		<div id="comment">
+			<p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+			<a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a>
+			<input type="submit" value="대댓글 달기" /></p>
 			<p>${getComment.content}</p>
 		</div>
 	</li>
@@ -63,7 +69,7 @@
 		</p>
 		<p>
 			<input type="hidden" name="num" value="${boardRead.num}">
-			<input type="submit" value="대댓글 달기">
+			<input type="submit" value="대댓글 달기" onclick="return addText()">
 		</p>
 	</form>	
 </div>
