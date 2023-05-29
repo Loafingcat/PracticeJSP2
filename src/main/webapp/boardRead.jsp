@@ -12,9 +12,12 @@
 <meta charset="UTF-8">
 <title>게시판 글 열람</title>
 </head>
-<script type="text/javascript">
-
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  function showTextBox(button) {
+    var textBox = $(button).siblings('.text-box');
+    textBox.slideToggle();
+  }
 </script>
 <body>
 	<h3>게시판 글 열람</h3>
@@ -47,17 +50,22 @@
 <!-- 댓글 부분 -->
 <hr />
 <ul>
-	<c:forEach items="${getComment}" var="getComment">
-	<li>
-		<div id="comment">
-			<p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss" />
-			<a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a>
-			<input type="submit" value="대댓글 달기" /></p>
-			<p>${getComment.content}</p>
-		</div>
-	</li>
-	</c:forEach>
+  <c:forEach items="${getComment}" var="getComment">
+    <li>
+      <div id="comment">
+        <p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+          <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a>
+        </p>
+        <button onclick="showTextBox(this)">대댓글 달기</button>
+        <p>${getComment.content}</p>
+        <div class="text-box" style="display: none;">
+          <textarea rows="4" cols="50"></textarea>
+        </div>
+      </div>
+    </li>
+  </c:forEach>
 </ul>
+
 
 <div>
 	<form action="writeComment.bbs"method="post">
@@ -69,7 +77,6 @@
 		</p>
 		<p>
 			<input type="hidden" name="num" value="${boardRead.num}">
-			<input type="submit" value="대댓글 달기" onclick="return addText()">
 		</p>
 	</form>	
 </div>
