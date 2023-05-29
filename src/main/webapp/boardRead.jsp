@@ -53,15 +53,15 @@
   <c:forEach items="${getComment}" var="getComment">
     <li>
       <div id="comment">
-        <p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+        <p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss"/></p>
           <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a>
-        </p>
-        <button onclick="showTextBox(this)">대댓글 달기</button>
-        <p>${getComment.content}</p>
-        <div class="text-box" style="display: none;">
+          <button onclick="showTextBox(this)">대댓글 달기</button>
+          <p>${getComment.content}</p>
+         <div class="text-box" style="display: none;">
           <textarea rows="4" cols="50"></textarea>
-        </div>
-      </div>
+          <p><input type="submit" value="대댓글 달기"></p>
+         </div>
+	  </div>
     </li>
   </c:forEach>
 </ul>
@@ -77,6 +77,7 @@
 		</p>
 		<p>
 			<input type="hidden" name="num" value="${boardRead.num}">
+			<input type="submit" value="댓글 달기">
 		</p>
 	</form>	
 </div>
