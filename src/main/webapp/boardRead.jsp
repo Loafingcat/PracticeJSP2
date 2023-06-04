@@ -14,7 +14,7 @@
 </head>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  function showTextBox(button) {
+  function textBox(button) {
     var textBox = $(button).siblings('.text-box');
     textBox.slideToggle();
   }
@@ -55,7 +55,7 @@
       <div id="comment">
         <p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss"/></p>
           <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a>
-          <button onclick="showTextBox(this)">대댓글 달기</button>
+          <button onclick="textBox(this)">대댓글 달기</button>
           <p>${getComment.content}</p>
          <div class="text-box" style="display: none;">
           <textarea rows="4" cols="50"></textarea>
