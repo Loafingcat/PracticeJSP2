@@ -1,6 +1,6 @@
 package board;
 
-import java.io.IOException;  
+import java.io.IOException;   
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import board.command.BoardCmd;
 import board.command.BoardCommentDeleteCmd;
+import board.command.BoardCommentReplyCmd;
 import board.command.BoardCommentWriteCmd;
 import board.command.BoardDeleteCheckCmd;
 import board.command.BoardDeleteCmd;
@@ -155,6 +156,11 @@ public class BoardFrontController extends HttpServlet {
 		}
 		if(cmdURI.equals("/commentDelete.bbs")) {
 			cmd = new BoardCommentDeleteCmd();
+			cmd.execute(request, response);
+			viewPage = "boardList.bbs";
+		}
+		if(cmdURI.equals("/replyComment.bbs")) {
+			cmd = new BoardCommentReplyCmd();
 			cmd.execute(request, response);
 			viewPage = "boardList.bbs";
 		}

@@ -9,6 +9,27 @@ public class Comment {
 	private String writer;//작성자
 	private String content;//내용
 	private Date regDate;//작성일
+	private int rref;
+	private int rstep;
+	private int rlev;
+	public int getRref() {
+		return rref;
+	}
+	public void setRref(int rref) {
+		this.rref = rref;
+	}
+	public int getRstep() {
+		return rstep;
+	}
+	public void setRstep(int rstep) {
+		this.rstep = rstep;
+	}
+	public int getRlev() {
+		return rlev;
+	}
+	public void setRlev(int rlev) {
+		this.rlev = rlev;
+	}
 	public int getRno() {
 		return rno;
 	}

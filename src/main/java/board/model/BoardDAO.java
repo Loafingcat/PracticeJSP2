@@ -710,7 +710,7 @@ public class BoardDAO {
 		ArrayList<Comment> comment = new ArrayList<Comment>();
 		
 		try {
-			String sql = "select * from board_comment where num = ? AND ISDELETED = '0'";
+			String sql = "select * from board_comment where num = ? AND ISDELETED = '0' ORDER BY rref desc, rstep asc";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
 			System.out.println(inputNum);
@@ -721,6 +721,9 @@ public class BoardDAO {
 				String writer = rs.getString("writer");
 				String content = rs.getString("content");
 				Date regDate = rs.getDate("regdate");
+				int rref = rs.getInt("rref");
+				int rstep = rs.getInt("rstep");
+				int rlev = rs.getInt("rlev");
 				
 				Comment cmt = new Comment();
 				cmt.setRno(rno);
@@ -728,6 +731,9 @@ public class BoardDAO {
 				cmt.setWriter(writer);
 				cmt.setContent(content);
 				cmt.setRegDate(regDate);
+				cmt.setRref(rref);
+				cmt.setRstep(rstep);
+				cmt.setRlev(rlev);
 				
 				comment.add(cmt);
 			}
@@ -746,7 +752,7 @@ public class BoardDAO {
 		return comment;
 	}
 	//댓글 등록 기능
-	public void writeComment(String writer, String content) {
+	public void writeComment(String writer, String content, String rref, String rstep, String rlev) {
 		
 		int num = 1;
 		int rno = 1;
@@ -759,13 +765,14 @@ public class BoardDAO {
 			if (rs.next()) {
 				rno = rs.getInt(rno);
 			}
-			sql = "INSERT INTO board_comment (rno, num, writer, content, regDate) values(?,?,?,?,SYSDATE())";
+			sql = "INSERT INTO board_comment (rno, num, writer, content, regDate, rref, rstep, rlev) values(?,?,?,?,SYSDATE(),?,0,0)";
 			pstmt = conn.prepareStatement(sql);
 			
 			pstmt.setInt(1, rno);
 			pstmt.setInt(2, num);
 			pstmt.setString(3, writer);
 			pstmt.setString(4, content);
+			pstmt.setInt(5, rno);
 			
 			pstmt.executeUpdate();
 			
@@ -800,5 +807,99 @@ public class BoardDAO {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	//대댓글 등록 기능
+	public void replyComment(String writer, String content, String rref, String rstep, String rlev) {
+		
+		
+		Connection conn = null;
+		int num = 1;
+		int rno = 1;
+		int replyCommentStep = 0;
+		String sql = null;
+		
+		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			
+			//답글이 위치할 step 값을 가져옴
+			replyCommentStep = boardReplyCommentSearchStep(rref, rlev, rstep);
+			
+			if(replyCommentStep > 0) {//만약 replyStep값이 0보다 크다면
+				sql = "UPDATE board_comment SET rstep = rstep + 1 where rref = ? and rstep >= ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, Integer.parseInt(rref));
+				pstmt.setInt(2, replyCommentStep);
+				pstmt.executeUpdate();
+			} else {//replyStep이 0인 경우
+				sql = "SELECT MAX(RSTEP) FROM board_comment WHERE rref = ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, Integer.parseInt(rref));
+				rs = pstmt.executeQuery();
+				if(rs.next()) replyCommentStep = rs.getInt(1) + 1;
+			}
+			sql = "SELECT IFNULL(MAX(rno), 0)+1 AS rno FROM board_comment";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				rno = rs.getInt(rno);
+			}
+			sql = "INSERT INTO board_comment (rno, num, writer, content, regDate, rref, rstep, rlev) values(?,?,?,?,SYSDATE(),?,?,?)";
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, rno);
+			pstmt.setInt(2, num);
+			pstmt.setString(3, writer);
+			pstmt.setString(4, content);
+			pstmt.setInt(5, Integer.parseInt(rref));
+			pstmt.setInt(6, replyCommentStep);
+			pstmt.setInt(7, Integer.parseInt(rlev)+1);
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	//대댓글 위치 등록
+	public int boardReplyCommentSearchStep(String rref, String rlev, String rstep) {
+		int replyCommentStep=0;
+	
+		try {
+			String dbURL = "jdbc:mariadb://localhost:3306/jspbook";
+			String dbID = "root";
+			String dbPassword = "junho";
+			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			String sql = "SELECT IFNULL(MIN(rstep), 0) from board_comment WHERE rref = ? and rlev <= ? and rstep > ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, Integer.parseInt(rref));
+			pstmt.setInt(2, Integer.parseInt(rlev));
+			pstmt.setInt(3, Integer.parseInt(rstep));
+			rs = pstmt.executeQuery();
+		
+			if(rs.next()) replyCommentStep = rs.getInt(1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(rs != null) rs.close();
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return replyCommentStep;
 	}
 }

@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import board.model.BoardDAO;
 
-public class BoardCommentWriteCmd implements BoardCmd {
+public class BoardCommentReplyCmd implements BoardCmd {
 	
 	public void execute (HttpServletRequest request, HttpServletResponse response) {
 		
@@ -16,7 +16,7 @@ public class BoardCommentWriteCmd implements BoardCmd {
 		String rstep = request.getParameter("rstep");
 		
 		BoardDAO dao = new BoardDAO();
-		dao.writeComment(writer, content, rref, rstep, rlev);
+		dao.replyComment(writer, content, rref, rstep, rlev);
 		
 	}
 
