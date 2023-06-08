@@ -18,6 +18,7 @@ public class BoardCommentWriteCmd implements BoardCmd {
 		BoardDAO dao = new BoardDAO();
 		dao.writeComment(writer, content, rref, rstep, rlev);
 		
+		
 	}
 
 }

@@ -710,10 +710,9 @@ public class BoardDAO {
 		ArrayList<Comment> comment = new ArrayList<Comment>();
 		
 		try {
-			String sql = "select * from board_comment where num = ? AND ISDELETED = '0' ORDER BY rref desc, rstep asc";
+			String sql = "select * from board_comment where num = ? AND ISDELETED = '0' ORDER BY rref asc, rstep asc";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
-			System.out.println(inputNum);
 			rs = pstmt.executeQuery();
 			while(rs.next()) {
 				int rno = rs.getInt("rno");

@@ -162,7 +162,7 @@ public class BoardFrontController extends HttpServlet {
 		if(cmdURI.equals("/replyComment.bbs")) {
 			cmd = new BoardCommentReplyCmd();
 			cmd.execute(request, response);
-			viewPage = "boardList.bbs";
+			viewPage = "boardRead.bbs";
 		}
 		RequestDispatcher dis = request.getRequestDispatcher(viewPage);
 		dis.forward(request, response);
