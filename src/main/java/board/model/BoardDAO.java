@@ -167,10 +167,13 @@ public class BoardDAO {
 			String dbID = "root";
 			String dbPassword = "junho";
 			conn = DriverManager.getConnection(dbURL, dbID, dbPassword);
+			
 			String sql = "UPDATE BOARD SET READ_CNT = READ_CNT+1 WHERE NUM = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, Integer.parseInt(inputNum));
 			pstmt.executeUpdate();
+			System.out.println(Integer.parseInt(inputNum));
+			System.out.println(inputNum);
 			
 			sql = "SELECT * FROM BOARD WHERE NUM = ?";
 			pstmt = conn.prepareStatement(sql);
@@ -757,7 +760,15 @@ public class BoardDAO {
 		int rno = 1;
 		
 		try {
-			String sql = "SELECT IFNULL(MAX(rno), 0)+1 AS rno FROM board_comment";
+			String sql = "SELECT IFNULL(MAX(num), 0)+1 AS NUM FROM BOARD";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				num = rs.getInt("num");
+			}
+			
+			sql = "SELECT IFNULL(MAX(rno), 0)+1 AS rno FROM board_comment";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			

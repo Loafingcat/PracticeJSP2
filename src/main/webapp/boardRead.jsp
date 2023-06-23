@@ -51,16 +51,18 @@
 <hr />
 <ul>
   <c:forEach items="${getComment}" var="getComment">
-    <li>
-      <div id="comment">
+    <li style="list-style:none;">
+      <div id="comment" style="margin-left: ${getComment.rlev * 40}px;">
         <p>${getComment.writer} / <fmt:formatDate value="${getComment.regDate}" pattern="yyyy-MM-dd HH:mm:ss"/></p>
           <a onclick="return confirm('정말로 삭제하시겠습니까?')" href="commentDelete.bbs?rno=${getComment.rno}">[X]</a>
           <c:if test="${getComment.rlev < 1}">
           <button onclick="textBox(this)">대댓글 달기</button>
+          
       	  </c:if>
           <p>${getComment.content}</p>
-         <div class="text-box" style="display: none;">
+          <div class="text-box" style="display: none;">
           <form action="replyComment.bbs" method="post">
+          
           <p><label>댓글 작성자</label><input type="text" name="writer"></p>
           <input type="hidden" name="rno" value="${getComment.rno}">
           <input type="hidden" name="rref" value="${getComment.rref}">
@@ -68,6 +70,7 @@
           <input type="hidden" name="rstep" value="${getComment.rstep}">
           <textarea rows="4" cols="50" name="content"></textarea>
           <p><input type="submit" value="대댓글 달기"></p>
+         
           </form>
          </div>
 	  </div>

@@ -21,6 +21,8 @@ public class BoardReadCmd implements BoardCmd {
 		
 		request.setAttribute("getComment", comment);
 		request.setAttribute("boardRead", writing);
+		
+		
 	}
 
 }
